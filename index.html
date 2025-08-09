@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Budget v5.1 — mobile‑first (patch)</title>
+<title>Budget v5.2 — mobile‑first (iPhone top nav)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -75,11 +75,13 @@
   .sheet{position:fixed;left:0;right:0;bottom:0;transform:translateY(110%);transition:transform .3s ease;z-index:40;background:var(--panel);border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:var(--shadow);padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
   .sheet.open{transform:translateY(0)}
   .sheet .row-2{grid-template-columns:1fr 1fr}
-  /* Bottom nav for iPhone */
+  /* Mobile tweaks (header stays on TOP) */
   @media (max-width:640px){
-    header{position:fixed;bottom:0;top:auto;padding-bottom:env(safe-area-inset-bottom)}
-    .page{padding-bottom:120px}
-    nav{overflow-x:auto;white-space:nowrap}
+    header{position:sticky;top:0;bottom:auto;padding-top:env(safe-area-inset-top);padding-bottom:8px}
+    .brand{font-size:16px}
+    nav{overflow-x:auto;white-space:nowrap;gap:6px}
+    nav a{padding:6px 10px;border-radius:10px;font-size:14px}
+    .page{padding-top:10px;padding-bottom:84px}
   }
   /* Toast (undo) */
   .toast{position:fixed;left:16px;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:35;background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:12px;padding:12px;display:none;align-items:center;justify-content:space-between}
@@ -89,7 +91,7 @@
 <body>
 <header>
   <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-    <div class="brand">💰 Budget v5.1</div>
+    <div class="brand">💰 Budget v5.2</div>
     <nav id="nav">
       <a href="#dashboard" class="active">Dashboard</a>
       <a href="#plan">Plan</a>

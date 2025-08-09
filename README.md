@@ -1,10 +1,9 @@
 
-# Budget v5.1 — Déploiement Vercel (correctif nav)
+# Budget v5.2 — Nav en haut sur iPhone
 
-- Correction JS : `or` → `||` (Safari bloquait le script, donc les onglets ne répondaient pas).
-- Fichiers : `index.html`, `manifest.webmanifest`, `sw.js`, `vercel.json`.
+- Modif CSS mobile : le header reste **en haut** (plus de barre en bas).
+- Nav compacte (+ safe-area).
 
 ## Mise à jour
-1) Dans GitHub, **Upload files** et remplace **index.html** par celui de ce dossier (v5.1).
-2) Sur Vercel, **Redeploy**.
-3) Forcer l’actualisation : ouvrir l’URL avec `?v=51` ou recharger la PWA.
+1) Remplace `index.html` dans ton repo par celui de v5.2.
+2) Redeploy Vercel, puis ouvre l’URL avec `?v=52` si besoin de forcer le cache.
