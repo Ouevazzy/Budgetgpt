@@ -3,12 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Budget v5.2 — mobile‑first (iPhone top nav)</title>
+<title>Mes finance — v5.3 iPhone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0e1729">
+<meta name="theme-color" content="#0e1729">\n
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mes finance">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
 <style>
   :root{
     --bg:#0b1220; --panel:#0e1729; --card:#0f1b33; --muted:#8aa0bf; --text:#e6edf7;
@@ -86,7 +91,23 @@
   /* Toast (undo) */
   .toast{position:fixed;left:16px;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:35;background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:12px;padding:12px;display:none;align-items:center;justify-content:space-between}
   .toast.show{display:flex}
-</style>
+
+/* iPhone polish */
+*{-webkit-tap-highlight-color: rgba(0,0,0,0.1)}
+@media (max-width:640px){
+  button, .btn, nav a { min-height: 44px; }
+  .fab button{ width:64px; height:64px; font-size:28px; }
+}
+/* Swipe row for transactions */
+.tr-swipe{ position: relative; overflow: hidden; touch-action: pan-y; }
+.tr-swipe .actions{ position:absolute; right:0; top:0; bottom:0; display:flex; gap:6px; align-items:center; padding:0 8px; background:rgba(220,38,38,.12); border-left:1px solid var(--border); transform:translateX(100%); transition:transform .2s ease; }
+.tr-swipe.swiped .actions{ transform:translateX(0); }
+.tr-swipe .content{ transition:transform .2s ease; }
+.tr-swipe.swiped .content{ transform:translateX(-120px); }
+/* Input accessory bar (close keyboard) */
+.accessory{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:none; background:var(--panel); border-top:1px solid var(--border); padding:6px 12px env(safe-area-inset-bottom); }
+.accessory.show{ display:flex; justify-content:flex-end; }
+\n</style>
 </head>
 <body>
 <header>
@@ -1272,7 +1293,65 @@ function importCSV(){
   reader.readAsText(file);
 }
 
-// ---- Init ----
+
+// ---- Mobile swipe-to-delete (transactions) ----
+let _touch = {x:0,y:0,row:null,dx:0};
+function attachSwipeHandlers(){
+  document.querySelectorAll('#table-txs tbody tr').forEach(tr=>{
+    if (tr.dataset.swipeBound) return;
+    tr.dataset.swipeBound = '1';
+    tr.addEventListener('touchstart', e=>{
+      _touch.x = e.touches[0].clientX; _touch.y = e.touches[0].clientY; _touch.row = tr; _touch.dx=0;
+    }, {passive:true});
+    tr.addEventListener('touchmove', e=>{
+      if (!_touch.row) return;
+      const dx = e.touches[0].clientX - _touch.x;
+      _touch.dx = dx;
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(e.touches[0].clientY - _touch.y)){
+        e.preventDefault();
+        if (dx < -10){ tr.classList.add('swiped'); }
+        if (dx > 10){ tr.classList.remove('swiped'); }
+      }
+    }, {passive:false});
+    tr.addEventListener('touchend', ()=>{ _touch.row=null; });
+  });
+}
+const origRenderTxs = renderTxs;
+renderTxs = function(){
+  origRenderTxs();
+  const tbody = document.querySelector('#table-txs tbody');
+  Array.from(tbody.children).forEach(tr=>{
+    if (tr.querySelector('.actions')) return;
+    if (tr.querySelector('td') && tr.querySelector('td').classList.contains('muted')) return;
+    tr.classList.add('tr-swipe');
+    const content = document.createElement('div'); content.className = 'content';
+    while (tr.firstChild){ content.appendChild(tr.firstChild); }
+    tr.appendChild(content);
+    const actions = document.createElement('div'); actions.className='actions';
+    const btn = document.createElement('button'); btn.className='btn danger'; btn.textContent='Supprimer';
+    btn.onclick = ()=>{ const id = Number(tr.getAttribute('data-id')); delTx(id); };
+    actions.appendChild(btn);
+    tr.appendChild(actions);
+  });
+  attachSwipeHandlers();
+};
+const _origRow = renderTxRow;
+renderTxRow = function(t){
+  const html = _origRow(t);
+  return html.replace('<tr>', `<tr data-id="${t.id}">`);
+};
+// ---- Accessory bar to close keyboard on iOS ----
+const accessory = document.getElementById('accessory');
+function showAccessory(){ accessory.classList.add('show'); }
+function hideAccessory(){ accessory.classList.remove('show'); }
+document.addEventListener('focusin', (e)=>{
+  const el = e.target;
+  if (el.matches('input[inputmode="decimal"], input[type="date"], input[inputmode="numeric"], input[type="number"]')){
+    showAccessory();
+  }
+});
+document.addEventListener('focusout', ()=>{ setTimeout(hideAccessory, 80); });
+\n// ---- Init ----
 (function init(){
   applyTheme();
   const today = new Date().toISOString().slice(0,10);
@@ -1280,5 +1359,10 @@ function importCSV(){
   const hash = location.hash || '#dashboard'; showPage(hash.slice(1));
 })();
 </script>
+
+<div class="accessory" id="accessory">
+  <button class="btn" onclick="document.activeElement && document.activeElement.blur();hideAccessory()">Fermer le clavier</button>
+</div>
 </body>
+
 </html>

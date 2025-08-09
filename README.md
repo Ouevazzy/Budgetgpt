@@ -1,9 +1,9 @@
 
-# Budget v5.2 — Nav en haut sur iPhone
+# Mes finance v5.3 — iPhone polish + icône
 
-- Modif CSS mobile : le header reste **en haut** (plus de barre en bas).
-- Nav compacte (+ safe-area).
+- Nav en haut (compacte), cibles tactiles ≥44px, FAB + Swipe pour supprimer, barre "Fermer le clavier".
+- Icône PWA incluse et manifest mis à jour. Nom d’app : **Mes finance**.
 
 ## Mise à jour
-1) Remplace `index.html` dans ton repo par celui de v5.2.
-2) Redeploy Vercel, puis ouvre l’URL avec `?v=52` si besoin de forcer le cache.
+1) Remplacez les fichiers à la racine du repo : `index.html`, `manifest.webmanifest`, `sw.js`, `apple-touch-icon.png`, `pwa-192x192.png`, `pwa-512x512.png`, `vercel.json`.
+2) Redeploy sur Vercel, puis ouvrez `?v=53` pour forcer le refresh si besoin.
