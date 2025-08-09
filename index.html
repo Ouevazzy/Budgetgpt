@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mes finance — v5.3 iPhone</title>
+<title>Mes finance — v5.4 iPhone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -107,7 +107,28 @@
 /* Input accessory bar (close keyboard) */
 .accessory{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:none; background:var(--panel); border-top:1px solid var(--border); padding:6px 12px env(safe-area-inset-bottom); }
 .accessory.show{ display:flex; justify-content:flex-end; }
-\n</style>
+\n
+/* --- iPhone Tab Bar --- */
+@media (max-width:640px){
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--panel);
+    border-top:1px solid var(--border);padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;gap:6px}
+  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:transparent;color:var(--muted);padding:8px 6px;border-radius:12px}
+  .tabbar button.active{color:var(--text);background:rgba(0,0,0,.05)}
+  .tabbar .lbl{font-size:11px}
+  header{position:sticky;top:0;bottom:auto;padding-top:env(safe-area-inset-top);padding-bottom:6px}
+  .page{padding-bottom:90px} /* space for tab bar */
+  /* Hide the long top nav on small screens to simplify */
+  header nav{display:none}
+}
+/* More sheet */
+.more-sheet{position:fixed;left:0;right:0;bottom:0;transform:translateY(110%);transition:transform .25s ease;
+  z-index:60;background:var(--panel);border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:var(--shadow);padding:12px 16px calc(16px + env(safe-area-inset-bottom));}
+.more-sheet.open{transform:translateY(0)}
+.more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.more-item{border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--card);text-align:center}
+.more-item b{display:block;margin-top:6px}
+
+</style>
 </head>
 <body>
 <header>
@@ -1351,7 +1372,22 @@ document.addEventListener('focusin', (e)=>{
   }
 });
 document.addEventListener('focusout', ()=>{ setTimeout(hideAccessory, 80); });
-\n// ---- Init ----
+\n
+// ---- Tab Bar (mobile) ----
+const tabbar = document.getElementById('tabbar');
+if (tabbar){
+  tabbar.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button'); if (!btn) return;
+    const target = btn.dataset.tab;
+    if (target === '#more'){ openMore(); return; }
+    goto(target);
+    tabbar.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+  });
+}
+function openMore(){ document.getElementById('moreSheet').classList.add('open'); }
+function closeMore(){ document.getElementById('moreSheet').classList.remove('open'); }
+
+// ---- Init ----
 (function init(){
   applyTheme();
   const today = new Date().toISOString().slice(0,10);
@@ -1363,6 +1399,32 @@ document.addEventListener('focusout', ()=>{ setTimeout(hideAccessory, 80); });
 <div class="accessory" id="accessory">
   <button class="btn" onclick="document.activeElement && document.activeElement.blur();hideAccessory()">Fermer le clavier</button>
 </div>
+
+<!-- Tab Bar (mobile) -->
+<div class="tabbar" id="tabbar" role="tablist" aria-label="Navigation principale">
+  <button data-tab="#dashboard" class="active" aria-selected="true"><div>🏠</div><div class="lbl">Accueil</div></button>
+  <button data-tab="#transactions"><div>📒</div><div class="lbl">Transactions</div></button>
+  <button data-tab="#plan"><div>🗂️</div><div class="lbl">Budget</div></button>
+  <button data-tab="#calendar"><div>📅</div><div class="lbl">Calendrier</div></button>
+  <button data-tab="#more"><div>⋯</div><div class="lbl">Plus</div></button>
+</div>
+
+<!-- More sheet -->
+<div class="more-sheet" id="moreSheet">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <strong>Plus</strong>
+    <button class="btn" onclick="closeMore()">Fermer</button>
+  </div>
+  <div class="more-grid">
+    <div class="more-item" onclick="goto('#recurring');closeMore()"><div>🔁</div><b>Récurrences</b></div>
+    <div class="more-item" onclick="goto('#subscriptions');closeMore()"><div>🧾</div><b>Abonnements</b></div>
+    <div class="more-item" onclick="goto('#goals');closeMore()"><div>🎯</div><b>Objectifs</b></div>
+    <div class="more-item" onclick="goto('#categories');closeMore()"><div>🏷️</div><b>Catégories</b></div>
+    <div class="more-item" onclick="goto('#budgets');closeMore()"><div>📊</div><b>Budgets</b></div>
+    <div class="more-item" onclick="goto('#settings');closeMore()"><div>⚙️</div><b>Réglages</b></div>
+  </div>
+</div>
+
 </body>
 
 </html>
