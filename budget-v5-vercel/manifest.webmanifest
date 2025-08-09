@@ -1,9 +1,0 @@
-{
-  "name": "Budget v5",
-  "short_name": "Budget",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#0e1729",
-  "theme_color": "#0e1729",
-  "icons": []
-}
