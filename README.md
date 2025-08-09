@@ -1,18 +1,10 @@
 
-# Budget v5 — Déploiement Vercel (sans terminal)
+# Budget v5.1 — Déploiement Vercel (correctif nav)
 
-## Contenu
-- `index.html` — l'app (fichier autonome)
-- `manifest.webmanifest` — PWA
-- `sw.js` — service worker minimal
-- `vercel.json` — config Vercel (routes SPA)
+- Correction JS : `or` → `||` (Safari bloquait le script, donc les onglets ne répondaient pas).
+- Fichiers : `index.html`, `manifest.webmanifest`, `sw.js`, `vercel.json`.
 
-## Déploiement sans CLI
-1) Ouvre ton compte Vercel.
-2) Clique **New Project** > **Import** puis **Drag & Drop** le dossier *ou* ce ZIP.
-3) Vercel détecte un **Static Site** (pas de build). Clique **Deploy**.
-4) Une URL sera créée. Ouvre-la sur iPhone, puis **Partager** > **Ajouter à l’écran d’accueil** pour installer la PWA.
-
-## Remarques
-- L’app stocke les données en **localStorage** (propres à chaque navigateur/app iOS).
-- Tu peux mettre à jour en redéployant un nouveau ZIP (Vercel garde l’historique).
+## Mise à jour
+1) Dans GitHub, **Upload files** et remplace **index.html** par celui de ce dossier (v5.1).
+2) Sur Vercel, **Redeploy**.
+3) Forcer l’actualisation : ouvrir l’URL avec `?v=51` ou recharger la PWA.
