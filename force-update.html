@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Force update</title>
+<body style="font-family:system-ui;background:#0b1220;color:#e6edf7;display:flex;align-items:center;justify-content:center;height:100vh">
+<div>
+  <h1>Nettoyage du cache…</h1>
+  <p>Patiente quelques secondes, la page va se recharger.</p>
+</div>
+<script>
+(async()=>{
+  try{
+    if ('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs){ try{ await r.unregister(); }catch(e){} }
+    }
+    if (window.caches){
+      const keys = await caches.keys();
+      for (const k of keys){ try{ await caches.delete(k); }catch(e){} }
+    }
+  }catch(e){}
+  location.href = '/?v=' + Date.now();
+})();
+</script>
+</body>

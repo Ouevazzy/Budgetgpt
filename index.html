@@ -1,0 +1,1446 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mes finance — v5.4.2 iPhone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e1729">\n
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mes finance">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<style>
+  :root{
+    --bg:#0b1220; --panel:#0e1729; --card:#0f1b33; --muted:#8aa0bf; --text:#e6edf7;
+    --accent:#4cc9f0; --red:#ff6b6b; --green:#5dd39e; --border:rgba(255,255,255,.08);
+    --shadow:0 8px 30px rgba(0,0,0,.25);
+  }
+  :root.theme-light{
+    --bg:#f5f7fb; --panel:#ffffff; --card:#ffffff; --muted:#51607a; --text:#0f172a;
+    --accent:#0ea5e9; --red:#dc2626; --green:#16a34a; --border:#e5e7eb;
+    --shadow:0 10px 30px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  a{color:inherit}
+  header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border)}
+  .container{max-width:1180px;margin:0 auto;padding:12px 16px}
+  .brand{font-weight:700;letter-spacing:.2px}
+  nav{display:flex;gap:8px;flex-wrap:wrap}
+  nav a{padding:8px 12px;border-radius:12px;text-decoration:none;color:var(--muted);border:1px solid transparent;white-space:nowrap}
+  nav a.active, nav a:hover{border-color:var(--border);background:rgba(0,0,0,.03)}
+  .page{padding:18px 0 80px} /* extra bottom space for iPhone safe area */
+  .grid{display:grid;gap:16px}
+  .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media (max-width:900px){.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-2{grid-template-columns:1fr}}
+  .kpi{border:1px solid var(--border);border-radius:16px;padding:14px;background:var(--card);box-shadow:var(--shadow)}
+  .kpi .label{color:var(--muted);font-size:12px}
+  .kpi .value{font-size:22px;font-weight:700;margin-top:6px}
+  .card{border:1px solid var(--border);border-radius:16px;background:var(--card);box-shadow:var(--shadow)}
+  .card h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--border);font-size:15px}
+  .card .body{padding:14px}
+  .muted{color:var(--muted);font-size:12px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px;border-bottom:1px solid var(--border);font-size:14px}
+  th{text-align:left;color:var(--muted)}
+  .right{text-align:right}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);padding:11px 14px;border-radius:14px;background:transparent;color:inherit;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#031926;font-weight:600}
+  .btn.ghost{background:transparent}
+  .btn.danger{border-color:var(--red);color:var(--red)}
+  .row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .row-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .input, select, textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;outline:none;background:transparent;color:inherit}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .seg button{padding:10px 14px;background:transparent;color:inherit;border:0;cursor:pointer}
+  .seg button.active{background:rgba(0,0,0,.06);font-weight:600}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px}
+  .inc{background:rgba(22,163,74,.15);color:var(--green)}
+  .exp{background:rgba(220,38,38,.15);color:var(--red)}
+  .bar{height:10px;border-radius:999px;background:rgba(0,0,0,.06);border:1px solid var(--border);overflow:hidden}
+  .bar>span{display:block;height:100%;background:linear-gradient(90deg,#ff7a7a,#ffd27a)}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border);border-radius:999px;font-size:12px;background:transparent}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .day{border:1px solid var(--border);border-radius:12px;min-height:120px;background:var(--card);padding:8px;display:flex;flex-direction:column}
+  .day .d{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .chip{display:inline-block;padding:2px 6px;border-radius:999px;font-size:12px;margin:2px 0;border:1px solid var(--border)}
+  .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:30}
+  .fab button{border-radius:999px;width:60px;height:60px;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--accent);border:0;color:#031926;box-shadow:var(--shadow);cursor:pointer}
+  /* Quick Add sheet */
+  .sheet{position:fixed;left:0;right:0;bottom:0;transform:translateY(110%);transition:transform .3s ease;z-index:40;background:var(--panel);border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:var(--shadow);padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
+  .sheet.open{transform:translateY(0)}
+  .sheet .row-2{grid-template-columns:1fr 1fr}
+  /* Mobile tweaks (header stays on TOP) */
+  @media (max-width:640px){
+    header{position:sticky;top:0;bottom:auto;padding-top:env(safe-area-inset-top);padding-bottom:8px}
+    .brand{font-size:16px}
+    nav{overflow-x:auto;white-space:nowrap;gap:6px}
+    nav a{padding:6px 10px;border-radius:10px;font-size:14px}
+    .page{padding-top:10px;padding-bottom:84px}
+  }
+  /* Toast (undo) */
+  .toast{position:fixed;left:16px;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:35;background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:12px;padding:12px;display:none;align-items:center;justify-content:space-between}
+  .toast.show{display:flex}
+
+/* iPhone polish */
+*{-webkit-tap-highlight-color: rgba(0,0,0,0.1)}
+@media (max-width:640px){
+  button, .btn, nav a { min-height: 44px; }
+  .fab button{ width:64px; height:64px; font-size:28px; }
+}
+/* Swipe row for transactions */
+.tr-swipe{ position: relative; overflow: hidden; touch-action: pan-y; }
+.tr-swipe .actions{ position:absolute; right:0; top:0; bottom:0; display:flex; gap:6px; align-items:center; padding:0 8px; background:rgba(220,38,38,.12); border-left:1px solid var(--border); transform:translateX(100%); transition:transform .2s ease; }
+.tr-swipe.swiped .actions{ transform:translateX(0); }
+.tr-swipe .content{ transition:transform .2s ease; }
+.tr-swipe.swiped .content{ transform:translateX(-120px); }
+/* Input accessory bar (close keyboard) */
+.accessory{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:none; background:var(--panel); border-top:1px solid var(--border); padding:6px 12px env(safe-area-inset-bottom); }
+.accessory.show{ display:flex; justify-content:flex-end; }
+\n
+/* --- iPhone Tab Bar --- */
+@media (max-width:640px){
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--panel);
+    border-top:1px solid var(--border);padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;gap:6px}
+  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:transparent;color:var(--muted);padding:8px 6px;border-radius:12px}
+  .tabbar button.active{color:var(--text);background:rgba(0,0,0,.05)}
+  .tabbar .lbl{font-size:11px}
+  header{position:sticky;top:0;bottom:auto;padding-top:env(safe-area-inset-top);padding-bottom:6px}
+  .page{padding-bottom:90px} /* space for tab bar */
+  /* Hide the long top nav on small screens to simplify */
+  header nav{display:none}
+}
+/* More sheet */
+.more-sheet{position:fixed;left:0;right:0;bottom:0;transform:translateY(110%);transition:transform .25s ease;
+  z-index:60;background:var(--panel);border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:var(--shadow);padding:12px 16px calc(16px + env(safe-area-inset-bottom));}
+.more-sheet.open{transform:translateY(0)}
+.more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.more-item{border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--card);text-align:center}
+.more-item b{display:block;margin-top:6px}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div class="brand"><button class="btn" onclick="forceUpdate()" style="margin-right:8px">↻ Forcer la mise à jour</button> 💰 Budget v5.2</div>
+    <nav id="nav">
+      <a href="#dashboard" class="active">Dashboard</a>
+      <a href="#plan">Plan</a>
+      <a href="#transactions">Transactions</a>
+      <a href="#recurring">Récurrences</a>
+      <a href="#budgets">Budgets</a>
+      <a href="#subscriptions">Abonnements</a>
+      <a href="#calendar">Calendrier</a>
+      <a href="#goals">Objectifs</a>
+      <a href="#categories">Catégories</a>
+      <a href="#settings">Réglages</a>
+    </nav>
+    <div class="switch">
+      <label for="theme-toggle">Thème clair</label>
+      <input type="checkbox" id="theme-toggle" />
+    </div>
+  </div>
+</header>
+
+<!-- Undo Toast -->
+<div class="toast" id="toast">
+  <div id="toast-msg">Élément supprimé.</div>
+  <button class="btn" onclick="undoDelete()">Annuler</button>
+</div>
+
+<div class="container">
+  <!-- Dashboard -->
+  <section id="dashboard" class="page">
+    <h2>Tableau de bord</h2>
+    <div class="grid grid-4" style="margin:12px 0 20px">
+      <div class="kpi"><div class="label">Revenus (mois)</div><div id="kpi-income" class="value">—</div></div>
+      <div class="kpi"><div class="label">Dépenses (mois)</div><div id="kpi-expense" class="value">—</div></div>
+      <div class="kpi"><div class="label">Solde (mois)</div><div id="kpi-balance" class="value">—</div></div>
+      <div class="kpi"><div class="label">Safe-to-spend (30 j)</div><div id="kpi-sts" class="value">—</div></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn" onclick="goto('#plan')">Allouer le mois</button>
+      <button class="btn" onclick="goto('#calendar')">Voir le calendrier</button>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:12px">
+      <div class="card">
+        <h3>Budgets du mois</h3>
+        <div class="body" id="budget-progress"></div>
+      </div>
+      <div class="card">
+        <h3>À venir (30 jours)</h3>
+        <div class="body" id="upcoming-list"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Dernières transactions</h3>
+      <div class="body">
+        <table id="table-latest">
+          <thead><tr><th>Date</th><th>Type</th><th>Catégorie</th><th>Description</th><th>Tags</th><th class="right">Montant</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plan -->
+  <section id="plan" class="page" style="display:none">
+    <h2>Plan du mois (zéro-base)</h2>
+    <div class="card">
+      <h3>À répartir</h3>
+      <div class="body">
+        <div class="grid grid-3">
+          <div class="kpi"><div class="label">Revenus du mois</div><div id="plan-income" class="value">—</div></div>
+          <div class="kpi"><div class="label">Budget total alloué</div><div id="plan-budgeted" class="value">—</div></div>
+          <div class="kpi"><div class="label">Reste à allouer</div><div id="plan-left" class="value">—</div></div>
+        </div>
+        <div class="muted" style="margin-top:8px">Objectif: <span class="badge">Reste à allouer = 0</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Répartir par catégorie</h3>
+      <div class="body" id="plan-alloc"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Déplacer de l'argent</h3>
+      <div class="body row-3">
+        <div class="field"><label>Depuis</label><select id="mv-from"></select></div>
+        <div class="field"><label>Vers</label><select id="mv-to"></select></div>
+        <div class="field"><label>Montant</label><input id="mv-amount" class="input" inputmode="decimal" placeholder="ex: 50.00"></div>
+        <div><button class="btn primary" onclick="moveMoney()">Déplacer</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transactions -->
+  <section id="transactions" class="page" style="display:none">
+    <h2>Transactions</h2>
+
+    <div class="card">
+      <h3>Ajouter</h3>
+      <div class="body">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div class="seg" id="type-toggle">
+            <button data-type="INCOME" class="active">Revenu</button>
+            <button data-type="EXPENSE">Dépense</button>
+          </div>
+          <div class="muted">Le signe est appliqué automatiquement. Les règles d’auto‑caté (priorité/regex) s’appliquent sur la description.</div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="field"><label>Date</label><input id="t-date" type="date" class="input"></div>
+          <div class="field"><label>Catégorie</label><select id="t-category"></select></div>
+          <div class="field" style="grid-column:span 2"><label>Description</label><input id="t-desc" class="input" placeholder="Note / marchand"></div>
+          <div class="field"><label>Montant (ex: 49.90)</label><input id="t-amount" class="input" inputmode="decimal" placeholder="49.90"></div>
+          <div class="field"><label>Tags (séparés par ,)</label><input id="t-tags" class="input" placeholder="essence, boulot"></div>
+          <div class="field"><label>&nbsp;</label><button class="btn primary" onclick="addTransaction()">Ajouter</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Importer / Exporter</h3>
+      <div class="body toolbar">
+        <input type="file" id="csv-file" accept=".csv">
+        <button class="btn" onclick="importCSV()">Importer CSV</button>
+        <button class="btn" onclick="exportCSV()">Exporter CSV</button>
+        <div class="muted">Colonnes: Date,Type,Catégorie,Description,Montant,Tags</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Filtrer</h3>
+      <div class="body row-3">
+        <div class="field"><label>Type</label><select id="f-type"><option value="ALL">Tous</option><option value="INCOME">Revenus</option><option value="EXPENSE">Dépenses</option></select></div>
+        <div class="field"><label>Catégorie</label><select id="f-category"></select></div>
+        <div class="field"><label>Tag</label><input id="f-tag" class="input" placeholder="ex: essence"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Liste (édition en ligne)</h3>
+      <div class="body">
+        <table id="table-txs">
+          <thead><tr><th>Date</th><th>Type</th><th>Catégorie</th><th>Description</th><th>Tags</th><th class="right">Montant</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recurring -->
+  <section id="recurring" class="page" style="display:none">
+    <h2>Règles récurrentes</h2>
+    <div class="card">
+      <h3>Ajouter</h3>
+      <div class="body">
+        <div class="row-3">
+          <div class="field"><label>Nom</label><input id="r-name" class="input" placeholder="Salaire, Loyer..." /></div>
+          <div class="field"><label>Type</label><select id="r-type"><option value="INCOME">Revenu</option><option value="EXPENSE">Dépense</option></select></div>
+          <div class="field"><label>Catégorie</label><select id="r-category"></select></div>
+        </div>
+        <div class="row-3" style="margin-top:10px">
+          <div class="field"><label>Montant (ex: 1200.00)</label><input id="r-amount" class="input" inputmode="decimal" /></div>
+          <div class="field"><label>Début</label><input id="r-start" type="date" class="input" /></div>
+          <div class="field"><label>Fréquence</label><select id="r-freq"><option value="MONTHLY">Mensuelle</option><option value="WEEKLY">Hebdomadaire</option><option value="YEARLY">Annuelle</option></select></div>
+        </div>
+        <div class="toolbar" style="margin-top:10px">
+          <button class="btn primary" onclick="addRule()">Créer</button>
+          <button class="btn" onclick="expandRecurring()">➕ Déployer (60 jours)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Règles existantes (édition)</h3>
+      <div class="body">
+        <table id="table-rules">
+          <thead><tr><th>Nom</th><th>Type</th><th>Catégorie</th><th>Montant</th><th>Début</th><th>Fréquence</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Budgets -->
+  <section id="budgets" class="page" style="display:none">
+    <h2>Budgets</h2>
+    <div class="card">
+      <h3>Ajouter / Mettre à jour</h3>
+      <div class="body">
+        <div class="row-3">
+          <div class="field"><label>Année</label><input id="b-year" type="number" class="input" inputmode="numeric"></div>
+          <div class="field"><label>Mois</label><input id="b-month" type="number" min="1" max="12" class="input" inputmode="numeric"></div>
+          <div class="field"><label>Catégorie (optionnel)</label><select id="b-category"><option value="">Global (dépenses)</option></select></div>
+        </div>
+        <div class="row-2" style="margin-top:10px">
+          <div class="field"><label>Montant (ex: 2000.00)</label><input id="b-amount" class="input" inputmode="decimal"></div>
+        </div>
+        <div style="margin-top:10px"><button class="btn primary" onclick="saveBudget()">Enregistrer</button></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Budgets du mois (édition en ligne)</h3>
+      <div class="body">
+        <table id="table-budgets">
+          <thead><tr><th>Catégorie</th><th>Mois</th><th>Montant</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subscriptions -->
+  <section id="subscriptions" class="page" style="display:none">
+    <h2>Abonnements & factures</h2>
+    <div class="card">
+      <h3>Ajout rapide</h3>
+      <div class="body row-3">
+        <div class="field"><label>Nom</label><input id="qa-name" class="input" placeholder="Netflix, Internet, Spotify"></div>
+        <div class="field"><label>Catégorie</label><select id="qa-cat"></select></div>
+        <div class="field"><label>Montant mensuel</label><input id="qa-amount" class="input" inputmode="decimal" placeholder="15.90"></div>
+        <div class="field"><label>Prochaine date</label><input id="qa-date" type="date" class="input"></div>
+        <div class="field"><label>&nbsp;</label><button class="btn primary" onclick="quickAddSubscription()">Ajouter</button></div>
+        <div class="field"><label>&nbsp;</label><button class="btn" onclick="expandRecurring()">Déployer maintenant</button></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Vue synthétique</h3>
+      <div class="body" id="subs-summary"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Calendrier 30 jours</h3>
+      <div class="body" id="subs-calendar"></div>
+    </div>
+  </section>
+
+  <!-- Calendar -->
+  <section id="calendar" class="page" style="display:none">
+    <h2>Calendrier</h2>
+    <div class="toolbar" style="margin-bottom:10px">
+      <button class="btn" onclick="calPrev()">◀</button>
+      <div id="cal-title" class="badge"></div>
+      <button class="btn" onclick="calNext()">▶</button>
+    </div>
+    <div class="calendar" id="calendar-grid" aria-label="Calendrier du mois"></div>
+  </section>
+
+  <!-- Goals -->
+  <section id="goals" class="page" style="display:none">
+    <h2>Objectifs</h2>
+    <div class="card">
+      <h3>Créer un objectif</h3>
+      <div class="body row-3">
+        <div class="field"><label>Nom</label><input id="g-name" class="input" placeholder="Vacances, Fonds d’urgence..."></div>
+        <div class="field"><label>Montant cible</label><input id="g-target" class="input" inputmode="decimal" placeholder="2000.00"></div>
+        <div class="field"><label>Date cible (optionnelle)</label><input id="g-date" type="date" class="input"></div>
+        <div><button class="btn primary" onclick="addGoal()">Ajouter</button></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Suivi (édition & contributions)</h3>
+      <div class="body" id="goals-list"></div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section id="categories" class="page" style="display:none">
+    <h2>Catégories</h2>
+    <div class="card">
+      <h3>Ajouter une catégorie</h3>
+      <div class="body row-3">
+        <div class="field"><label>Nom</label><input id="c-name" class="input" placeholder="Ex: Parking"></div>
+        <div class="field"><label>Type</label><select id="c-type"><option value="EXPENSE">Dépense</option><option value="INCOME">Revenu</option></select></div>
+        <div><button class="btn primary" onclick="addCategory()">Ajouter</button></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Liste (édition)</h3>
+      <div class="body">
+        <table id="table-cats">
+          <thead><tr><th>Nom</th><th>Type</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section id="settings" class="page" style="display:none">
+    <h2>Réglages</h2>
+    <div class="card">
+      <h3>Format</h3>
+      <div class="body row-2">
+        <div class="field"><label>Devise (ISO 4217)</label><input id="s-currency" class="input" placeholder="CHF"></div>
+        <div class="field"><label>Locale</label><input id="s-locale" class="input" placeholder="fr-CH"></div>
+        <div><button class="btn primary" onclick="saveSettings()">Enregistrer</button></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Règles d’auto‑catégorisation (priorité & regex)</h3>
+      <div class="body">
+        <div class="row" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px">
+          <div class="field"><label>Mot‑clé / Regex</label><input id="ar-key" class="input" placeholder="ex: ^CFF|SBB$"></div>
+          <div class="field"><label>Catégorie</label><select id="ar-cat"></select></div>
+          <div class="field"><label>Type</label><select id="ar-type"><option value="EXPENSE">Dépense</option><option value="INCOME">Revenu</option></select></div>
+          <div class="field"><label>Priorité (1=haut)</label><input id="ar-priority" type="number" class="input" value="10" inputmode="numeric"></div>
+          <div class="field"><label>Est une regex ?</label><select id="ar-isregex"><option value="no">Non</option><option value="yes">Oui</option></select></div>
+        </div>
+        <div style="margin-top:10px"><button class="btn" onclick="addAutoRule()">Ajouter règle</button></div>
+
+        <table id="table-rules-auto" style="margin-top:12px">
+          <thead><tr><th>Clé/Regex</th><th>Catégorie</th><th>Type</th><th>Priorité</th><th>Regex</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FAB + Quick Add -->
+<div class="fab"><button onclick="openSheet()">＋</button></div>
+<div class="sheet" id="sheet">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <strong>Ajouter rapidement</strong>
+    <button class="btn" onclick="closeSheet()">Fermer</button>
+  </div>
+  <div class="seg" id="qa-type"><button data-type="EXPENSE" class="active">Dépense</button><button data-type="INCOME">Revenu</button></div>
+  <div class="row-2" style="margin-top:10px">
+    <div class="field"><label>Montant</label><input id="qa2-amount" class="input" inputmode="decimal" placeholder="ex: 12.50"></div>
+    <div class="field"><label>Date</label><input id="qa2-date" type="date" class="input"></div>
+  </div>
+  <div class="row-2" style="margin-top:10px">
+    <div class="field"><label>Catégorie</label><select id="qa2-cat"></select></div>
+    <div class="field"><label>Description</label><input id="qa2-desc" class="input" placeholder="Note / marchand"></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn primary" onclick="quickAddTx()">Ajouter</button></div>
+</div>
+
+<script>
+// ---- Theme & PWA ----
+const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+if ('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+function applyTheme(){
+  const t = (STATE.ui && STATE.ui.theme) || (prefersLight ? 'light' : 'dark');
+  document.documentElement.classList.toggle('theme-light', t==='light');
+  document.getElementById('theme-toggle').checked = (t==='light');
+}
+
+// ---- State ----
+const DEFAULT = {
+  ui: { theme: prefersLight ? 'light' : 'dark', calMonth: new Date().toISOString().slice(0,7) },
+  settings: { currency: 'CHF', locale: 'fr-CH' },
+  categories: [
+    { id: 1, name: 'Salaire', type: 'INCOME' },
+    { id: 2, name: 'Bonus', type: 'INCOME' },
+    { id: 3, name: 'Autres revenus', type: 'INCOME' },
+    { id: 10, name: 'Loyer', type: 'EXPENSE' },
+    { id: 11, name: 'Courses', type: 'EXPENSE' },
+    { id: 12, name: 'Transport', type: 'EXPENSE' },
+    { id: 13, name: 'Santé', type: 'EXPENSE' },
+    { id: 14, name: 'Loisirs', type: 'EXPENSE' },
+    { id: 15, name: 'Restaurants', type: 'EXPENSE' },
+    { id: 16, name: 'Voiture', type: 'EXPENSE' },
+    { id: 17, name: 'Internet', type: 'EXPENSE' },
+    { id: 18, name: 'Énergie', type: 'EXPENSE' },
+  ],
+  transactions: [],   // {id,date,desc,amountCents,categoryId,type,tags[]}
+  rules: [],          // {id,name,type,categoryId,amountCents,startDate,freq,_edit?}
+  budgets: [],        // {id,year,month,categoryId|null,amountCents,_edit?}
+  autoRules: [
+    { id: 1, keyword: 'migros', categoryId: 11, type:'EXPENSE', priority: 10, isRegex:false },
+    { id: 2, keyword: 'coop', categoryId: 11, type:'EXPENSE', priority: 10, isRegex:false },
+    { id: 3, keyword: '^CFF|SBB$', categoryId: 12, type:'EXPENSE', priority: 5, isRegex:true }
+  ],                  // {_edit?}
+  goals: []           // {id,name,targetCents,targetDate?,savedCents,_edit?}
+};
+function load(){ return JSON.parse(localStorage.getItem('budget-v5') || JSON.stringify(DEFAULT)); }
+function save(state){ localStorage.setItem('budget-v5', JSON.stringify(state)); }
+let STATE = load();
+let ID_COUNTER = Number(localStorage.getItem('budget-v5-id') || '1');
+function nextId(){ ID_COUNTER++; localStorage.setItem('budget-v5-id', String(ID_COUNTER)); return ID_COUNTER; }
+function fmt(cents){
+  const cur = STATE.settings.currency || 'CHF';
+  const loc = STATE.settings.locale || 'fr-CH';
+  return new Intl.NumberFormat(loc, { style:'currency', currency:cur }).format((cents||0)/100);
+}
+function toCents(str){ const n = Number(String(str).replace(/\s/g,'').replace(',','.')); return Math.round(n*100); }
+function yyyymmdd(d){ return d.toISOString().slice(0,10); }
+function monthBounds(d){ return { start: new Date(d.getFullYear(), d.getMonth(), 1), end: new Date(d.getFullYear(), d.getMonth()+1, 0,23,59,59,999) }; }
+
+// ---- Navigation ----
+function goto(hash){ location.hash = hash; showPage(hash.slice(1)); }
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.style.display = (p.id===id?'':'none'));
+  document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href')==='#'+id));
+  render();
+}
+document.getElementById('nav').querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', e => { e.preventDefault(); goto(a.getAttribute('href')); });
+});
+
+// ---- Type toggle ----
+let TX_TYPE = 'INCOME';
+document.addEventListener('click', (e)=>{
+  if (e.target.closest('#type-toggle')){
+    const btn = e.target.closest('button'); if (!btn) return;
+    document.querySelectorAll('#type-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    TX_TYPE = btn.dataset.type;
+  }
+});
+
+document.getElementById('theme-toggle').addEventListener('change', (e)=>{
+  STATE.ui.theme = e.target.checked ? 'light' : 'dark'; save(STATE); applyTheme();
+});
+
+// ---- Quick Add sheet ----
+let QA_TYPE = 'EXPENSE';
+function openSheet(){ document.getElementById('sheet').classList.add('open'); }
+function closeSheet(){ document.getElementById('sheet').classList.remove('open'); }
+document.getElementById('qa-type').addEventListener('click', (e)=>{
+  if (e.target.tagName.toLowerCase()!=='button') return;
+  document.querySelectorAll('#qa-type button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  QA_TYPE = e.target.dataset.type;
+});
+function quickAddTx(){
+  const amount = Math.abs(toCents(document.getElementById('qa2-amount').value||'0'));
+  if (!amount){ alert('Montant invalide.'); return; }
+  const date = document.getElementById('qa2-date').value || yyyymmdd(new Date());
+  const categoryId = Number(document.getElementById('qa2-cat').value);
+  const desc = document.getElementById('qa2-desc').value||'';
+  const amountCents = QA_TYPE==='INCOME'? amount : -amount;
+  STATE.transactions.push({ id: nextId(), date, desc, amountCents, categoryId, type: QA_TYPE, tags: [] });
+  save(STATE); closeSheet(); render();
+}
+
+// ---- Rendering ----
+function renderSelects(){
+  const allCats = STATE.categories.map(c => `<option value="${c.id}">${c.name} (${c.type==='INCOME'?'Revenu':'Dépense'})</option>`).join('');
+  ['t-category','r-category','b-category','qa-cat','qa2-cat','ar-cat','mv-from','mv-to'].forEach(id=>{
+    const el = document.getElementById(id); if (!el) return;
+    if (id==='b-category') el.innerHTML = '<option value="">Global (dépenses)</option>' + STATE.categories.filter(c=>c.type==='EXPENSE').map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    else el.innerHTML = allCats;
+  });
+  const fcat = document.getElementById('f-category');
+  if (fcat) fcat.innerHTML = '<option value="ALL">Toutes</option>' + STATE.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+function renderDashboard(){
+  const now = new Date();
+  const {start, end} = monthBounds(now);
+  const txs = STATE.transactions.filter(t => new Date(t.date) >= start && new Date(t.date) <= end);
+  const inc = txs.filter(t=>t.type==='INCOME').reduce((a,b)=>a+b.amountCents,0);
+  const exp = txs.filter(t=>t.type==='EXPENSE').reduce((a,b)=>a+Math.abs(b.amountCents),0);
+  document.getElementById('kpi-income').textContent = fmt(inc);
+  document.getElementById('kpi-expense').textContent = fmt(exp);
+  document.getElementById('kpi-balance').textContent = fmt(inc-exp);
+  document.getElementById('kpi-sts').textContent = fmt(calcSafeToSpend());
+
+  // latest
+  const tbody = document.querySelector('#table-latest tbody');
+  tbody.innerHTML = txs.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10).map(t=>{
+    const cat = STATE.categories.find(c=>c.id===t.categoryId);
+    const tags = (t.tags||[]).map(x=>`<span class="badge">#${x}</span>`).join(' ');
+    return `<tr>
+      <td>${new Date(t.date).toLocaleDateString()}</td>
+      <td><span class="pill ${t.type==='INCOME'?'inc':'exp'}">${t.type==='INCOME'?'Revenu':'Dépense'}</span></td>
+      <td>${cat?cat.name:''}</td>
+      <td>${t.desc||''}</td>
+      <td>${tags}</td>
+      <td class="right ${t.type==='EXPENSE'?'exp':'inc'}">${fmt(t.amountCents)}</td>
+    </tr>`;
+  }).join('');
+
+  renderBudgetProgress();
+  renderUpcoming();
+}
+function renderBudgetProgress(){
+  const wrap = document.getElementById('budget-progress');
+  const now = new Date(); const {start,end}=monthBounds(now);
+  const txs = STATE.transactions.filter(t=>t.type==='EXPENSE' && new Date(t.date)>=start && new Date(t.date)<=end);
+  const spentByCat = {}; for (const t of txs){ spentByCat[t.categoryId] = (spentByCat[t.categoryId]||0) + Math.abs(t.amountCents); }
+  const thisMonthBudgets = STATE.budgets.filter(b => b.year===now.getFullYear() && b.month===now.getMonth()+1);
+  if (thisMonthBudgets.length===0){ wrap.innerHTML = '<div class="muted">Aucun budget défini pour ce mois.</div>'; return; }
+  wrap.innerHTML = thisMonthBudgets.map(b=>{
+    const spent = b.categoryId ? (spentByCat[b.categoryId]||0) : txs.reduce((a,x)=>a+Math.abs(x.amountCents),0);
+    const pct = Math.min(100, Math.round((spent / Math.max(1,b.amountCents)) * 100));
+    const name = b.categoryId ? (STATE.categories.find(c=>c.id===b.categoryId)?.name || '—') : 'Global';
+    return `<div style="margin:8px 0 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>${name}</div>
+        <div class="muted">${fmt(spent)} / ${fmt(b.amountCents)} (${pct}%)</div>
+      </div>
+      <div class="bar"><span style="width:${pct}%"></span></div>
+    </div>`;
+  }).join('');
+}
+function renderUpcoming(){
+  const wrap = document.getElementById('upcoming-list');
+  const items = upcomingOccurrences(30);
+  if (items.length===0){ wrap.innerHTML = '<div class="muted">Rien à venir sur 30 jours.</div>'; return; }
+  wrap.innerHTML = items.slice(0,8).map(it=>{
+    const cat = STATE.categories.find(c=>c.id===it.categoryId);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0">
+      <div><span class="muted">${new Date(it.date).toLocaleDateString()}</span> — ${it.name} <span class="badge">${cat?.name||''}</span></div>
+      <div class="${it.type==='EXPENSE'?'exp':'inc'}">${fmt(it.amountCents)}</div>
+    </div>`;
+  }).join('');
+}
+function renderPlan(){
+  const now = new Date(); const {start,end}=monthBounds(now);
+  const inc = STATE.transactions.filter(t=>t.type==='INCOME' && new Date(t.date)>=start && new Date(t.date)<=end).reduce((a,b)=>a+b.amountCents,0);
+  const thisMonthBudgets = STATE.budgets.filter(b => b.year===now.getFullYear() && b.month===now.getMonth()+1);
+  const totalBudgeted = thisMonthBudgets.reduce((a,b)=>a+b.amountCents,0);
+  document.getElementById('plan-income').textContent = fmt(inc);
+  document.getElementById('plan-budgeted').textContent = fmt(totalBudgeted);
+  document.getElementById('plan-left').textContent = fmt(inc - totalBudgeted);
+
+  // allocator
+  const wrap = document.getElementById('plan-alloc');
+  const rows = STATE.categories.filter(c=>c.type==='EXPENSE').map(c=>{
+    const b = thisMonthBudgets.find(x=>x.categoryId===c.id);
+    const amount = b ? b.amountCents : 0;
+    return `<div class="row-3" style="align-items:end;margin:6px 0">
+      <div><div class="field"><label>${c.name}</label><input data-alloc="${c.id}" class="input" inputmode="decimal" value="${(amount/100).toFixed(2)}"></div></div>
+      <div class="muted">Budget actuel: ${fmt(amount)}</div>
+      <div><button class="btn" onclick="saveAlloc(${c.id})">Enregistrer</button></div>
+    </div>`;
+  }).join('');
+  wrap.innerHTML = rows || '<div class="muted">Ajoute d’abord des catégories de dépense.</div>';
+
+  // move money selectors
+  const mvFrom = document.getElementById('mv-from'); const mvTo = document.getElementById('mv-to');
+  const opts = thisMonthBudgets.map(b => {
+    const name = b.categoryId ? (STATE.categories.find(c=>c.id===b.categoryId)?.name || '—') : 'Global';
+    return `<option value="${b.categoryId||''}">${name}</option>`;
+  }).join('');
+  mvFrom.innerHTML = opts; mvTo.innerHTML = opts;
+}
+let bar12, donutCat;
+function renderReports(){
+  const now = new Date();
+  const months = []; for (let i=11;i>=0;i--){ months.push(new Date(now.getFullYear(), now.getMonth()-i, 1)); }
+  const labels = months.map(d => d.toLocaleDateString(undefined,{month:'short',year:'2-digit'}));
+  const income=[], expense=[];
+  for (const m of months){
+    const {start,end} = monthBounds(m);
+    const txs = STATE.transactions.filter(t => new Date(t.date)>=start && new Date(t.date)<=end);
+    income.push(txs.filter(t=>t.type==='INCOME').reduce((a,b)=>a+b.amountCents,0)/100);
+    expense.push(txs.filter(t=>t.type==='EXPENSE').reduce((a,b)=>a+Math.abs(b.amountCents),0)/100);
+  }
+  const ctx1 = document.getElementById('bar12');
+  if (bar12) bar12.destroy();
+  bar12 = new Chart(ctx1, { type:'bar', data:{ labels, datasets:[{label:'Revenus', data:income}, {label:'Dépenses', data:expense}] }});
+
+  const {start,end} = monthBounds(now);
+  const txs = STATE.transactions.filter(t => t.type==='EXPENSE' && new Date(t.date)>=start && new Date(t.date)<=end);
+  const map = {};
+  for (const t of txs){
+    const name = (STATE.categories.find(c=>c.id===t.categoryId)?.name)||'Autres';
+    map[name]=(map[name]||0)+Math.abs(t.amountCents)/100;
+  }
+  const ctx2 = document.getElementById('donutCat');
+  if (donutCat) donutCat.destroy();
+  donutCat = new Chart(ctx2, { type:'doughnut', data:{ labels:Object.keys(map), datasets:[{label:'Dépenses', data:Object.values(map)}] }});
+}
+function renderTxs(){
+  const type = document.getElementById('f-type').value;
+  const cat = document.getElementById('f-category').value;
+  const tag = (document.getElementById('f-tag').value||'').toLowerCase();
+  const tbody = document.querySelector('#table-txs tbody');
+  let rows = STATE.transactions.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if (type!=='ALL') rows = rows.filter(t=>t.type===type);
+  if (cat!=='ALL') rows = rows.filter(t=>String(t.categoryId)===cat);
+  if (tag) rows = rows.filter(t=>(t.tags||[]).some(x=>x.toLowerCase().includes(tag)));
+  tbody.innerHTML = rows.map(t=> renderTxRow(t)).join('') || '<tr><td colspan="7" class="muted">Aucune transaction.</td></tr>';
+}
+function renderTxRow(t){
+  const cat = STATE.categories.find(c=>c.id===t.categoryId);
+  const tags = (t.tags||[]).map(x=>`#${x}`).join(', ');
+  if (t._edit){
+    return `<tr>
+      <td><input type="date" class="input" value="${t.date}" onchange="editChange(${t.id},'date',this.value)"></td>
+      <td>${t.type}</td>
+      <td><select class="input" onchange="editChange(${t.id},'categoryId',this.value)">${STATE.categories.map(c=>`<option ${c.id===t.categoryId?'selected':''} value="${c.id}">${c.name}</option>`).join('')}</select></td>
+      <td><input class="input" value="${t.desc || ''}" onchange="editChange(${t.id},'desc',this.value)"></td>
+      <td><input class="input" value="${tags}" onchange="editChange(${t.id},'tags',this.value)"></td>
+      <td class="right"><input class="input" inputmode="decimal" value="${(t.amountCents/100).toFixed(2)}" onchange="editChange(${t.id},'amountCents',this.value)"></td>
+      <td>
+        <button class="btn primary" onclick="saveEdit(${t.id})">Enregistrer</button>
+        <button class="btn" onclick="cancelEdit(${t.id})">Annuler</button>
+      </td>
+    </tr>`;
+  }
+  return `<tr>
+    <td>${new Date(t.date).toLocaleDateString()}</td>
+    <td><span class="pill ${t.type==='INCOME'?'inc':'exp'}">${t.type==='INCOME'?'Revenu':'Dépense'}</span></td>
+    <td>${cat?cat.name:''}</td>
+    <td>${t.desc||''}</td>
+    <td>${(t.tags||[]).map(x=>`<span class="badge">#${x}</span>`).join(' ')}</td>
+    <td class="right ${t.type==='EXPENSE'?'exp':'inc'}">${fmt(t.amountCents)}</td>
+    <td class="toolbar">
+      <button class="btn" onclick="startEdit(${t.id})">Éditer</button>
+      <button class="btn" onclick="duplicateTx(${t.id})">Dupliquer</button>
+      <button class="btn danger" onclick="delTx(${t.id})">Supprimer</button>
+    </td>
+  </tr>`;
+}
+function renderRules(){
+  const tbody = document.querySelector('#table-rules tbody');
+  tbody.innerHTML = STATE.rules.slice().sort((a,b)=>b.id-a.id).map(r=> renderRuleRow(r)).join('') || '<tr><td colspan="7" class="muted">Aucune règle.</td></tr>';
+}
+function renderRuleRow(r){
+  const cat = STATE.categories.find(c=>c.id===r.categoryId);
+  if (r._edit){
+    return `<tr>
+      <td><input class="input" value="${r.name}" onchange="ruleChange(${r.id},'name',this.value)"></td>
+      <td><select class="input" onchange="ruleChange(${r.id},'type',this.value)"><option ${r.type==='INCOME'?'selected':''} value="INCOME">Revenu</option><option ${r.type==='EXPENSE'?'selected':''} value="EXPENSE">Dépense</option></select></td>
+      <td><select class="input" onchange="ruleChange(${r.id},'categoryId',this.value)">${STATE.categories.map(c=>`<option ${c.id===r.categoryId?'selected':''} value="${c.id}">${c.name}</option>`).join('')}</select></td>
+      <td><input class="input" inputmode="decimal" value="${(r.amountCents/100).toFixed(2)}" onchange="ruleChange(${r.id},'amountCents',this.value)"></td>
+      <td><input type="date" class="input" value="${r.startDate}" onchange="ruleChange(${r.id},'startDate',this.value)"></td>
+      <td><select class="input" onchange="ruleChange(${r.id},'freq',this.value)"><option ${r.freq==='MONTHLY'?'selected':''} value="MONTHLY">Mensuelle</option><option ${r.freq==='WEEKLY'?'selected':''} value="WEEKLY">Hebdomadaire</option><option ${r.freq==='YEARLY'?'selected':''} value="YEARLY">Annuelle</option></select></td>
+      <td>
+        <button class="btn primary" onclick="saveRule(${r.id})">Enregistrer</button>
+        <button class="btn" onclick="cancelRule(${r.id})">Annuler</button>
+      </td>
+    </tr>`;
+  }
+  return `<tr>
+    <td>${r.name}</td>
+    <td><span class="pill ${r.type==='INCOME'?'inc':'exp'}">${r.type==='INCOME'?'Revenu':'Dépense'}</span></td>
+    <td>${cat?cat.name:''}</td>
+    <td>${fmt(r.amountCents)}</td>
+    <td>${new Date(r.startDate).toLocaleDateString()}</td>
+    <td>${r.freq}</td>
+    <td>
+      <button class="btn" onclick="editRule(${r.id})">Éditer</button>
+      <button class="btn danger" onclick="delRule(${r.id})">Supprimer</button>
+    </td>
+  </tr>`;
+}
+function renderBudgets(){
+  const now = new Date();
+  document.getElementById('b-year').value = now.getFullYear();
+  document.getElementById('b-month').value = String(now.getMonth()+1);
+  const tbody = document.querySelector('#table-budgets tbody');
+  const cur = STATE.budgets.filter(b => b.year===now.getFullYear() && b.month===now.getMonth()+1);
+  tbody.innerHTML = cur.map(b=> renderBudgetRow(b)).join('') || '<tr><td colspan="4" class="muted">Aucun budget défini pour ce mois.</td></tr>';
+}
+function renderBudgetRow(b){
+  const name = b.categoryId ? (STATE.categories.find(c=>c.id===b.categoryId)?.name || '—') : 'Global';
+  if (b._edit){
+    return `<tr>
+      <td>${name}</td><td>${b.month}/${b.year}</td>
+      <td><input class="input" inputmode="decimal" value="${(b.amountCents/100).toFixed(2)}" onchange="budgetChange(${b.id},this.value)"></td>
+      <td>
+        <button class="btn primary" onclick="saveBudgetInline(${b.id})">Enregistrer</button>
+        <button class="btn" onclick="cancelBudgetInline(${b.id})">Annuler</button>
+      </td>
+    </tr>`;
+  }
+  return `<tr>
+    <td>${name}</td><td>${b.month}/${b.year}</td><td>${fmt(b.amountCents)}</td>
+    <td>
+      <button class="btn" onclick="editBudgetInline(${b.id})">Éditer</button>
+      <button class="btn danger" onclick="delBudget(${b.id})">Supprimer</button>
+    </td>
+  </tr>`;
+}
+function renderAutoRules(){
+  const tbody = document.querySelector('#table-rules-auto tbody');
+  tbody.innerHTML = STATE.autoRules.slice().sort((a,b)=>a.priority-b.priority).map(r=>{
+    const cat = STATE.categories.find(c=>c.id===r.categoryId);
+    if (r._edit){
+      return `<tr>
+        <td><input class="input" value="${r.keyword}" onchange="autoRuleChange(${r.id},'keyword',this.value)"></td>
+        <td><select class="input" onchange="autoRuleChange(${r.id},'categoryId',this.value)">${STATE.categories.map(c=>`<option ${c.id===r.categoryId?'selected':''} value="${c.id}">${c.name}</option>`).join('')}</select></td>
+        <td><select class="input" onchange="autoRuleChange(${r.id},'type',this.value)"><option ${r.type==='EXPENSE'?'selected':''} value="EXPENSE">Dépense</option><option ${r.type==='INCOME'?'selected':''} value="INCOME">Revenu</option></select></td>
+        <td><input class="input" inputmode="numeric" value="${r.priority}" onchange="autoRuleChange(${r.id},'priority',this.value)"></td>
+        <td><select class="input" onchange="autoRuleChange(${r.id},'isRegex',this.value)"><option ${!r.isRegex?'selected':''} value="no">Non</option><option ${r.isRegex?'selected':''} value="yes">Oui</option></select></td>
+        <td>
+          <button class="btn primary" onclick="saveAutoRule(${r.id})">Enregistrer</button>
+          <button class="btn" onclick="cancelAutoRule(${r.id})">Annuler</button>
+        </td>
+      </tr>`;
+    }
+    return `<tr>
+      <td>${r.keyword}</td><td>${cat?cat.name:''}</td><td>${r.type}</td><td>${r.priority}</td><td>${r.isRegex?'Oui':'Non'}</td>
+      <td>
+        <button class="btn" onclick="editAutoRule(${r.id})">Éditer</button>
+        <button class="btn danger" onclick="delAutoRule(${r.id})">Supprimer</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="muted">Aucune règle.</td></tr>';
+}
+function renderSubs(){
+  // summary
+  const wrap = document.getElementById('subs-summary');
+  const monthly = STATE.rules.filter(r=>r.type==='EXPENSE' && (r.freq==='MONTHLY' || r.freq==='WEEKLY' || r.freq==='YEARLY'));
+  const total = monthly.reduce((sum,r)=>{
+    let m = r.amountCents;
+    if (r.freq==='WEEKLY') m = Math.round(m * 52/12);
+    if (r.freq==='YEARLY') m = Math.round(m / 12);
+    return sum + Math.abs(m);
+  },0);
+  wrap.innerHTML = `<div class="grid grid-3">
+    <div class="kpi"><div class="label">Abonnements (est. mensuel)</div><div class="value">${fmt(total)}</div></div>
+    <div class="kpi"><div class="label">Nombre de règles</div><div class="value">${monthly.length}</div></div>
+    <div class="kpi"><div class="label">Prochaine échéance</div><div class="value">${nextOccurrenceLabel()||'—'}</div></div>
+  </div>`;
+
+  // calendar-lite
+  const cal = document.getElementById('subs-calendar');
+  const items = upcomingOccurrences(30);
+  const byDay = {};
+  for (const it of items){ const d = new Date(it.date).toDateString(); (byDay[d]=byDay[d]||[]).push(it); }
+  cal.innerHTML = Object.keys(byDay).sort((a,b)=>new Date(a)-new Date(b)).map(d=>{
+    const list = byDay[d].map(it=>{
+      const cat = STATE.categories.find(c=>c.id===it.categoryId);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0">
+        <div>${it.name} <span class="badge">${cat?.name||''}</span></div>
+        <div class="${it.type==='EXPENSE'?'exp':'inc'}">${fmt(it.amountCents)}</div>
+      </div>`;
+    }).join('');
+    return `<div style="padding:10px;border-bottom:1px solid var(--border)"><div class="muted" style="margin-bottom:6px">${new Date(d).toLocaleDateString()}</div>${list}</div>`;
+  }).join('') || '<div class="muted">Aucun événement.</div>';
+}
+function renderCalendar(){
+  const grid = document.getElementById('calendar-grid');
+  const title = document.getElementById('cal-title');
+  const [y,m] = STATE.ui.calMonth.split('-').map(Number);
+  const first = new Date(y, m-1, 1);
+  const firstDow = (first.getDay()+6)%7; // Monday=0
+  const daysInMonth = new Date(y, m, 0).getDate();
+  title.textContent = first.toLocaleDateString(undefined, { month:'long', year:'numeric' });
+
+  const start = new Date(y, m-1, 1); const end = new Date(y, m, 0, 23,59,59,999);
+  const txs = STATE.transactions.filter(t => new Date(t.date)>=start && new Date(t.date)<=end);
+  const occ = occurrencesInMonth(y, m);
+  const events = {};
+  txs.forEach(t => { const k = t.date; (events[k]=events[k]||[]).push({label: (t.type==='EXPENSE'?'−':'+') + (Math.abs(t.amountCents)/100).toFixed(2), cls: t.type==='EXPENSE'?'exp':'inc'}); });
+  occ.forEach(o => { const k = o.date; (events[k]=events[k]||[]).push({label: o.name, cls: o.type==='EXPENSE'?'exp':'inc'}); });
+
+  let html = '';
+  for (let i=0;i<firstDow;i++){ html += `<div></div>`; }
+  for (let d=1; d<=daysInMonth; d++){
+    const ds = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const chips = (events[ds]||[]).slice(0,4).map(e=>`<div class="chip ${e.cls}">${e.label}</div>`).join('');
+    html += `<div class="day" onclick="quickAddDate('${ds}')"><div class="d">${d}</div>${chips}</div>`;
+  }
+  grid.innerHTML = html;
+}
+function renderGoals(){
+  const wrap = document.getElementById('goals-list');
+  wrap.innerHTML = STATE.goals.map(g=>{
+    const pct = Math.min(100, Math.round((g.savedCents/Math.max(1,g.targetCents))*100));
+    if (g._edit){
+      return `<div class="card" style="margin:8px 0"><div class="body row-3">
+        <div class="field"><label>Nom</label><input class="input" value="${g.name}" onchange="goalChange(${g.id},'name',this.value)"></div>
+        <div class="field"><label>Cible</label><input class="input" inputmode="decimal" value="${(g.targetCents/100).toFixed(2)}" onchange="goalChange(${g.id},'targetCents',this.value)"></div>
+        <div class="field"><label>Date cible</label><input type="date" class="input" value="${g.targetDate||''}" onchange="goalChange(${g.id},'targetDate',this.value)"></div>
+        <div class="toolbar"><button class="btn primary" onclick="saveGoal(${g.id})">Enregistrer</button><button class="btn" onclick="cancelGoal(${g.id})">Annuler</button></div>
+      </div></div>`;
+    }
+    return `<div class="card" style="margin:8px 0">
+      <div class="body">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div><strong>${g.name}</strong> — ${fmt(g.savedCents)} / ${fmt(g.targetCents)} (${pct}%) ${g.targetDate?`<span class="muted">• objectif ${new Date(g.targetDate).toLocaleDateString()}</span>`:''}</div>
+          <div class="toolbar">
+            <input class="input" placeholder="Contribution (ex: 100.00)" id="gc-${g.id}" inputmode="decimal">
+            <button class="btn primary" onclick="goalContrib(${g.id})">Ajouter</button>
+            <button class="btn" onclick="editGoal(${g.id})">Éditer</button>
+            <button class="btn danger" onclick="delGoal(${g.id})">Supprimer</button>
+          </div>
+        </div>
+        <div class="bar" style="margin-top:8px"><span style="width:${pct}%"></span></div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="muted">Aucun objectif. Ajoute-en un ci-dessus.</div>';
+}
+function renderCategories(){
+  const tbody = document.querySelector('#table-cats tbody');
+  tbody.innerHTML = STATE.categories.map(c=>{
+    if (c._edit){
+      return `<tr>
+        <td><input class="input" value="${c.name}" onchange="catChange(${c.id},'name',this.value)"></td>
+        <td><select class="input" onchange="catChange(${c.id},'type',this.value)"><option ${c.type==='EXPENSE'?'selected':''} value="EXPENSE">Dépense</option><option ${c.type==='INCOME'?'selected':''} value="INCOME">Revenu</option></select></td>
+        <td><button class="btn primary" onclick="saveCategory(${c.id})">Enregistrer</button> <button class="btn" onclick="cancelCategory(${c.id})">Annuler</button></td>
+      </tr>`;
+    }
+    return `<tr>
+      <td>${c.name}</td><td>${c.type}</td>
+      <td><button class="btn" onclick="editCategory(${c.id})">Éditer</button> <button class="btn danger" onclick="delCategory(${c.id})">Supprimer</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="3" class="muted">Aucune catégorie.</td></tr>';
+}
+function renderSettings(){
+  document.getElementById('s-currency').value = STATE.settings.currency;
+  document.getElementById('s-locale').value = STATE.settings.locale;
+}
+function render(){
+  applyTheme();
+  renderSelects();
+  renderDashboard();
+  renderPlan();
+  renderTxs();
+  renderRules();
+  renderSubs();
+  renderReports();
+  renderBudgets();
+  renderCalendar();
+  renderGoals();
+  renderCategories();
+  renderAutoRules();
+  // preset quick add dates
+  const today = new Date().toISOString().slice(0,10);
+  ['qa-date','qa2-date','r-start','t-date'].forEach(id=>{ const el=document.getElementById(id); if (el && !el.value) el.value=today; });
+}
+
+// ---- Helpers ----
+function occurrencesInMonth(y, m){
+  const start = new Date(y, m-1, 1);
+  const end = new Date(y, m, 0, 23,59,59,999);
+  const out = [];
+  for (const r of STATE.rules){
+    let dt = new Date(r.startDate);
+    while (dt <= end){
+      if (dt >= start && dt <= end){ out.push({ ...r, date: yyyymmdd(dt) }); }
+      if (r.freq==='MONTHLY'){ dt = new Date(dt.getFullYear(), dt.getMonth()+1, dt.getDate()); }
+      else if (r.freq==='WEEKLY'){ dt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()+7); }
+      else { dt = new Date(dt.getFullYear()+1, dt.getMonth(), dt.getDate()); }
+    }
+  }
+  return out.sort((a,b)=> new Date(a.date)-new Date(b.date));
+}
+function upcomingOccurrences(days){
+  const out = [];
+  const today = new Date();
+  const horizon = new Date(today.getTime() + days*24*60*60*1000);
+  for (const r of STATE.rules){
+    let dt = new Date(r.startDate);
+    while (dt <= horizon){
+      if (dt >= today){ out.push({ ...r, date: yyyymmdd(dt) }); }
+      if (r.freq==='MONTHLY'){ dt = new Date(dt.getFullYear(), dt.getMonth()+1, dt.getDate()); }
+      else if (r.freq==='WEEKLY'){ dt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()+7); }
+      else { dt = new Date(dt.getFullYear()+1, dt.getMonth(), dt.getDate()); }
+    }
+  }
+  return out.sort((a,b)=> new Date(a.date)-new Date(b.date));
+}
+function nextOccurrenceLabel(){
+  const items = upcomingOccurrences(60);
+  if (!items.length) return null;
+  const n = items[0];
+  return `${new Date(n.date).toLocaleDateString()} — ${n.name}`;
+}
+function calcSafeToSpend(){
+  const now = new Date(); const {start,end} = monthBounds(now);
+  const monthInc = STATE.transactions.filter(t=>t.type==='INCOME' && new Date(t.date)>=start && new Date(t.date)<=end).reduce((a,b)=>a+b.amountCents,0);
+  const monthExp = STATE.transactions.filter(t=>t.type==='EXPENSE' && new Date(t.date)>=start && new Date(t.date)<=end).reduce((a,b)=>a+Math.abs(b.amountCents),0);
+  const upcoming = upcomingOccurrences(30);
+  const nextIncome = upcoming.filter(x=>x.type==='INCOME').reduce((a,b)=>a+b.amountCents,0);
+  const nextExpense = upcoming.filter(x=>x.type==='EXPENSE').reduce((a,b)=>a+Math.abs(b.amountCents),0);
+  return (monthInc - monthExp) + (nextIncome - nextExpense);
+}
+
+// ---- Actions (Transactions) ----
+function addTransaction(){
+  const date = document.getElementById('t-date').value || yyyymmdd(new Date());
+  let categoryId = Number(document.getElementById('t-category').value);
+  const desc = document.getElementById('t-desc').value || '';
+  const inputAmount = document.getElementById('t-amount').value||'0';
+  const base = Math.abs(toCents(inputAmount));
+  const tags = (document.getElementById('t-tags').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if (!base){ alert('Montant invalide.'); return; }
+  const match = matchAutoRule(desc);
+  const type = match ? match.type : TX_TYPE;
+  if (match) categoryId = match.categoryId;
+  const amountCents = type==='INCOME' ? base : -base;
+  STATE.transactions.push({ id: nextId(), date, desc, amountCents, categoryId, type, tags });
+  save(STATE); render();
+}
+function startEdit(id){ const t = STATE.transactions.find(x=>x.id===id); t._edit=true; save(STATE); renderTxs(); }
+function editChange(id, key, val){
+  const t = STATE.transactions.find(x=>x.id===id);
+  if (key==='amountCents') t.amountCents = Math.round(parseFloat(String(val).replace(',','.'))*100);
+  else if (key==='categoryId') t.categoryId = Number(val);
+  else if (key==='tags') t.tags = val.split(',').map(s=>s.trim()).filter(Boolean);
+  else t[key] = val;
+}
+function saveEdit(id){ const t = STATE.transactions.find(x=>x.id===id); t._edit=false; save(STATE); render(); }
+function cancelEdit(id){ const t = STATE.transactions.find(x=>x.id===id); t._edit=false; save(STATE); renderTxs(); }
+let _undo = null;
+function duplicateTx(id){
+  const t = STATE.transactions.find(x=>x.id===id);
+  const copy = { ...t, id: nextId(), date: yyyymmdd(new Date()) };
+  delete copy._edit;
+  STATE.transactions.push(copy); save(STATE); render();
+}
+function delTx(id){
+  const idx = STATE.transactions.findIndex(t=>t.id===id);
+  if (idx>-1){
+    const removed = STATE.transactions.splice(idx,1)[0];
+    _undo = { type:'tx', item: removed };
+    showToast('Transaction supprimée.'); save(STATE); render();
+  }
+}
+function undoDelete(){
+  if (!_undo) return;
+  if (_undo.type==='tx'){ STATE.transactions.push(_undo.item); }
+  else if (_undo.type==='rule'){ STATE.rules.push(_undo.item); }
+  else if (_undo.type==='budget'){ STATE.budgets.push(_undo.item); }
+  else if (_undo.type==='goal'){ STATE.goals.push(_undo.item); }
+  else if (_undo.type==='cat'){ STATE.categories.push(_undo.item); }
+  _undo = null; hideToast(); save(STATE); render();
+}
+function showToast(msg){
+  const t = document.getElementById('toast'); document.getElementById('toast-msg').textContent = msg; t.classList.add('show');
+  setTimeout(()=>{ hideToast(); }, 5000);
+}
+function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+
+// ---- Actions (Rules) ----
+function addRule(){
+  const name = document.getElementById('r-name').value.trim();
+  const type = document.getElementById('r-type').value;
+  const categoryId = Number(document.getElementById('r-category').value);
+  const amount = Math.abs(toCents(document.getElementById('r-amount').value||'0'));
+  const startDate = document.getElementById('r-start').value || yyyymmdd(new Date());
+  const freq = document.getElementById('r-freq').value;
+  if (!name || !amount || !categoryId){ alert('Vérifie les champs.'); return; }
+  const amountCents = type==='INCOME' ? amount : -amount;
+  STATE.rules.push({ id: nextId(), name, type, categoryId, amountCents, startDate, freq });
+  save(STATE); render();
+}
+function editRule(id){ const r = STATE.rules.find(x=>x.id===id); r._edit=true; save(STATE); renderRules(); }
+function ruleChange(id, key, val){
+  const r = STATE.rules.find(x=>x.id===id);
+  if (key==='amountCents') r.amountCents = Math.round(parseFloat(String(val).replace(',','.'))*100);
+  else if (key==='categoryId') r.categoryId = Number(val);
+  else r[key] = val;
+}
+function saveRule(id){ const r = STATE.rules.find(x=>x.id===id); r._edit=false; save(STATE); render(); }
+function cancelRule(id){ const r = STATE.rules.find(x=>x.id===id); r._edit=false; renderRules(); }
+function delRule(id){
+  const idx = STATE.rules.findIndex(r=>r.id===id);
+  if (idx>-1){
+    const removed = STATE.rules.splice(idx,1)[0];
+    _undo = { type:'rule', item: removed };
+    showToast('Règle supprimée.'); save(STATE); render();
+  }
+}
+function expandRecurring(){
+  const today = new Date();
+  const horizon = new Date(today.getTime() + 60*24*60*60*1000);
+  const exists = new Set(STATE.transactions.filter(t=>t.ruleId).map(t=>`${t.ruleId}-${t.date}-${t.amountCents}`));
+  for (const r of STATE.rules){
+    let dt = new Date(r.startDate);
+    while (dt <= horizon){
+      if (dt >= today){
+        const key = `${r.id}-${yyyymmdd(dt)}-${r.amountCents}`;
+        if (!exists.has(key)){
+          STATE.transactions.push({ id: nextId(), date: yyyymmdd(dt), desc: r.name, amountCents: r.amountCents, categoryId: r.categoryId, ruleId: r.id, type: r.type });
+          exists.add(key);
+        }
+      }
+      if (r.freq==='MONTHLY'){ dt = new Date(dt.getFullYear(), dt.getMonth()+1, dt.getDate()); }
+      else if (r.freq==='WEEKLY'){ dt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()+7); }
+      else { dt = new Date(dt.getFullYear()+1, dt.getMonth(), dt.getDate()); }
+    }
+  }
+  save(STATE); render();
+  showToast('Occurrences déployées (60 jours).');
+}
+
+// ---- Actions (Budgets) ----
+function saveBudget(){
+  const year = Number(document.getElementById('b-year').value);
+  const month = Number(document.getElementById('b-month').value);
+  const categorySel = document.getElementById('b-category').value;
+  const categoryId = categorySel ? Number(categorySel) : null;
+  const amountCents = Math.abs(toCents(document.getElementById('b-amount').value||'0'));
+  const existing = STATE.budgets.find(b => b.year===year && b.month===month && String(b.categoryId||'')===String(categoryId||''));
+  if (existing){ existing.amountCents = amountCents; }
+  else { STATE.budgets.push({ id: nextId(), year, month, categoryId, amountCents }); }
+  save(STATE); render();
+}
+function delBudget(id){
+  const idx = STATE.budgets.findIndex(b=>b.id===id);
+  if (idx>-1){
+    const removed = STATE.budgets.splice(idx,1)[0];
+    _undo = { type:'budget', item: removed };
+    showToast('Budget supprimé.'); save(STATE); render();
+  }
+}
+function editBudgetInline(id){ const b = STATE.budgets.find(x=>x.id===id); b._edit=true; save(STATE); renderBudgets(); }
+let _budgetTmp = {};
+function budgetChange(id, val){ const cents = Math.abs(toCents(val||'0')); _budgetTmp[id]=cents; }
+function saveBudgetInline(id){
+  const b = STATE.budgets.find(x=>x.id===id); b.amountCents = _budgetTmp[id] ?? b.amountCents; b._edit=false; save(STATE); render();
+}
+function cancelBudgetInline(id){ const b = STATE.budgets.find(x=>x.id===id); b._edit=false; renderBudgets(); }
+
+// ---- Actions (Subscriptions quick add) ----
+function quickAddSubscription(){
+  const name = document.getElementById('qa-name').value.trim();
+  const categoryId = Number(document.getElementById('qa-cat').value);
+  const amount = Math.abs(toCents(document.getElementById('qa-amount').value||'0'));
+  const start = document.getElementById('qa-date').value || yyyymmdd(new Date());
+  if (!name || !categoryId || !amount){ alert('Complète les champs.'); return; }
+  STATE.rules.push({ id: nextId(), name, type:'EXPENSE', categoryId, amountCents: -amount, startDate: start, freq:'MONTHLY' });
+  save(STATE); render();
+}
+
+// ---- Actions (Calendar) ----
+function calPrev(){
+  const [y,m] = STATE.ui.calMonth.split('-').map(Number);
+  const d = new Date(y, m-2, 1);
+  STATE.ui.calMonth = d.toISOString().slice(0,7); save(STATE); renderCalendar();
+}
+function calNext(){
+  const [y,m] = STATE.ui.calMonth.split('-').map(Number);
+  const d = new Date(y, m, 1);
+  STATE.ui.calMonth = d.toISOString().slice(0,7); save(STATE); renderCalendar();
+}
+function quickAddDate(dateStr){
+  document.getElementById('t-date').value = dateStr;
+  goto('#transactions');
+}
+
+// ---- Actions (Goals) ----
+function addGoal(){
+  const name = document.getElementById('g-name').value.trim();
+  const target = Math.abs(toCents(document.getElementById('g-target').value||'0'));
+  const date = document.getElementById('g-date').value || null;
+  if (!name || !target){ alert('Nom et montant cible requis.'); return; }
+  STATE.goals.push({ id: nextId(), name, targetCents: target, targetDate: date, savedCents: 0 });
+  save(STATE); renderGoals();
+}
+function goalContrib(id){
+  const input = document.getElementById('gc-'+id);
+  const cents = Math.abs(toCents(input.value||'0')); if (!cents) return;
+  const g = STATE.goals.find(x=>x.id===id); g.savedCents += cents; input.value=''; save(STATE); renderGoals();
+}
+function editGoal(id){ const g = STATE.goals.find(x=>x.id===id); g._edit=true; save(STATE); renderGoals(); }
+function goalChange(id, key, val){
+  const g = STATE.goals.find(x=>x.id===id);
+  if (key==='targetCents') g.targetCents = Math.abs(toCents(val||'0'));
+  else g[key] = val;
+}
+function saveGoal(id){ const g = STATE.goals.find(x=>x.id===id); g._edit=false; save(STATE); renderGoals(); }
+function cancelGoal(id){ const g = STATE.goals.find(x=>x.id===id); g._edit=false; renderGoals(); }
+function delGoal(id){
+  const idx = STATE.goals.findIndex(g=>g.id===id);
+  if (idx>-1){
+    const removed = STATE.goals.splice(idx,1)[0];
+    _undo = { type:'goal', item: removed };
+    showToast('Objectif supprimé.'); save(STATE); renderGoals(); render();
+  }
+}
+
+// ---- Actions (Categories) ----
+function addCategory(){
+  const name = document.getElementById('c-name').value.trim();
+  const type = document.getElementById('c-type').value;
+  if (!name){ alert('Nom requis.'); return; }
+  STATE.categories.push({ id: nextId(), name, type });
+  save(STATE); renderCategories(); renderSelects();
+}
+function editCategory(id){ const c = STATE.categories.find(x=>x.id===id); c._edit=true; save(STATE); renderCategories(); }
+function catChange(id, key, val){
+  const c = STATE.categories.find(x=>x.id===id);
+  if (key==='name') c.name = val;
+  else c.type = val;
+}
+function saveCategory(id){ const c = STATE.categories.find(x=>x.id===id); c._edit=false; save(STATE); renderCategories(); renderSelects(); }
+function cancelCategory(id){ const c = STATE.categories.find(x=>x.id===id); c._edit=false; renderCategories(); }
+function delCategory(id){
+  const idx = STATE.categories.findIndex(c=>c.id===id);
+  if (idx>-1){
+    const removed = STATE.categories.splice(idx,1)[0];
+    _undo = { type:'cat', item: removed };
+    showToast('Catégorie supprimée.'); save(STATE); renderCategories(); renderSelects(); render();
+  }
+}
+
+// ---- Auto Rules (settings) ----
+function addAutoRule(){
+  const keyword = document.getElementById('ar-key').value.trim();
+  const categoryId = Number(document.getElementById('ar-cat').value);
+  const type = document.getElementById('ar-type').value;
+  const priority = Number(document.getElementById('ar-priority').value || '10');
+  const isRegex = document.getElementById('ar-isregex').value === 'yes';
+  if (!keyword || !categoryId){ alert('Renseigne la clé/regex et la catégorie.'); return; }
+  STATE.autoRules.push({ id: nextId(), keyword, categoryId, type, priority, isRegex });
+  save(STATE); renderAutoRules();
+}
+function editAutoRule(id){ const r = STATE.autoRules.find(x=>x.id===id); r._edit=true; save(STATE); renderAutoRules(); }
+function autoRuleChange(id, key, val){
+  const r = STATE.autoRules.find(x=>x.id===id);
+  if (key==='priority') r.priority = Number(val||'10');
+  else if (key==='categoryId') r.categoryId = Number(val);
+  else if (key==='isRegex') r.isRegex = (val==='yes');
+  else r[key] = val;
+}
+function saveAutoRule(id){ const r = STATE.autoRules.find(x=>x.id===id); r._edit=false; save(STATE); renderAutoRules(); }
+function cancelAutoRule(id){ const r = STATE.autoRules.find(x=>x.id===id); r._edit=false; renderAutoRules(); }
+function delAutoRule(id){
+  const idx = STATE.autoRules.findIndex(r=>r.id===id);
+  if (idx>-1){
+    const removed = STATE.autoRules.splice(idx,1)[0];
+    _undo = { type:'rule-auto', item: removed }; // not used in undo restore but kept
+    showToast('Règle auto supprimée.'); save(STATE); renderAutoRules();
+  }
+}
+function matchAutoRule(desc){
+  const rules = STATE.autoRules.slice().sort((a,b)=>a.priority-b.priority);
+  for (const r of rules){
+    if (r.isRegex){
+      try { if (new RegExp(r.keyword, 'i').test(desc)) return r; } catch(e){ /* ignore invalid regex */ }
+    } else {
+      if (desc.toLowerCase().includes(r.keyword.toLowerCase())) return r;
+    }
+  }
+  return null;
+}
+
+// ---- Calendar helpers ----
+function quickAddDate(dateStr){
+  document.getElementById('t-date').value = dateStr;
+  goto('#transactions');
+}
+
+// ---- CSV ----
+function exportCSV(){
+  const rows = [['Date','Type','Catégorie','Description','Montant','Tags']];
+  for (const t of STATE.transactions){
+    const cat = STATE.categories.find(c=>c.id===t.categoryId)?.name || '';
+    rows.push([t.date, t.type, cat, t.desc||'', (t.amountCents/100).toFixed(2), (t.tags||[]).join('|')]);
+  }
+  const csv = rows.map(r=> r.map(x => `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importCSV(){
+  const file = document.getElementById('csv-file').files?.[0];
+  if (!file){ alert('Choisis un fichier CSV.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = reader.result.toString();
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    const header = lines.shift().split(',');
+    const idx = (name) => header.findIndex(h => h.replace(/"/g,'').toLowerCase()===name.toLowerCase());
+    const idDate = idx('Date'), idType=idx('Type'), idCat=idx('Catégorie'), idDesc=idx('Description'), idAmt=idx('Montant'), idTags=idx('Tags');
+    for (const ln of lines){
+      const cells = ln.match(/("([^"]|"")*"|[^,]*)/g).filter((_,i)=>i<header.length).map(c=>c.replace(/^"|"$|""/g, m=> m==='""'?'"':''));
+      const date = cells[idDate] || new Date().toISOString().slice(0,10);
+      const type = (cells[idType]||'EXPENSE').toUpperCase().includes('REV')?'INCOME':'EXPENSE';
+      const catName = cells[idCat] || '';
+      let cat = STATE.categories.find(c=>c.name.toLowerCase()===catName.toLowerCase());
+      if (!cat){
+        cat = { id: nextId(), name: (catName || 'Autres'), type: type };
+        STATE.categories.push(cat);
+      }
+      const desc = cells[idDesc] || '';
+      const amountCents = Math.round(parseFloat((cells[idAmt]||'0').replace(',','.'))*100) * (type==='INCOME'?1:-1);
+      const tags = (cells[idTags]||'').split('|').map(s=>s.trim()).filter(Boolean);
+      if (!isNaN(amountCents) && amountCents!==0){
+        STATE.transactions.push({ id: nextId(), date, desc, amountCents, categoryId: cat.id, type, tags });
+      }
+    }
+    save(STATE); render();
+    showToast('Import CSV terminé.');
+  };
+  reader.readAsText(file);
+}
+
+
+// ---- Mobile swipe-to-delete (transactions) ----
+let _touch = {x:0,y:0,row:null,dx:0};
+function attachSwipeHandlers(){
+  document.querySelectorAll('#table-txs tbody tr').forEach(tr=>{
+    if (tr.dataset.swipeBound) return;
+    tr.dataset.swipeBound = '1';
+    tr.addEventListener('touchstart', e=>{
+      _touch.x = e.touches[0].clientX; _touch.y = e.touches[0].clientY; _touch.row = tr; _touch.dx=0;
+    }, {passive:true});
+    tr.addEventListener('touchmove', e=>{
+      if (!_touch.row) return;
+      const dx = e.touches[0].clientX - _touch.x;
+      _touch.dx = dx;
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(e.touches[0].clientY - _touch.y)){
+        e.preventDefault();
+        if (dx < -10){ tr.classList.add('swiped'); }
+        if (dx > 10){ tr.classList.remove('swiped'); }
+      }
+    }, {passive:false});
+    tr.addEventListener('touchend', ()=>{ _touch.row=null; });
+  });
+}
+const origRenderTxs = renderTxs;
+renderTxs = function(){
+  origRenderTxs();
+  const tbody = document.querySelector('#table-txs tbody');
+  Array.from(tbody.children).forEach(tr=>{
+    if (tr.querySelector('.actions')) return;
+    if (tr.querySelector('td') && tr.querySelector('td').classList.contains('muted')) return;
+    tr.classList.add('tr-swipe');
+    const content = document.createElement('div'); content.className = 'content';
+    while (tr.firstChild){ content.appendChild(tr.firstChild); }
+    tr.appendChild(content);
+    const actions = document.createElement('div'); actions.className='actions';
+    const btn = document.createElement('button'); btn.className='btn danger'; btn.textContent='Supprimer';
+    btn.onclick = ()=>{ const id = Number(tr.getAttribute('data-id')); delTx(id); };
+    actions.appendChild(btn);
+    tr.appendChild(actions);
+  });
+  attachSwipeHandlers();
+};
+const _origRow = renderTxRow;
+renderTxRow = function(t){
+  const html = _origRow(t);
+  return html.replace('<tr>', `<tr data-id="${t.id}">`);
+};
+// ---- Accessory bar to close keyboard on iOS ----
+const accessory = document.getElementById('accessory');
+function showAccessory(){ accessory.classList.add('show'); }
+function hideAccessory(){ accessory.classList.remove('show'); }
+document.addEventListener('focusin', (e)=>{
+  const el = e.target;
+  if (el.matches('input[inputmode="decimal"], input[type="date"], input[inputmode="numeric"], input[type="number"]')){
+    showAccessory();
+  }
+});
+document.addEventListener('focusout', ()=>{ setTimeout(hideAccessory, 80); });
+\n
+// ---- Tab Bar (mobile) ----
+const tabbar = document.getElementById('tabbar');
+if (tabbar){
+  tabbar.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button'); if (!btn) return;
+    const target = btn.dataset.tab;
+    if (target === '#more'){ openMore(); return; }
+    goto(target);
+    tabbar.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+  });
+}
+function openMore(){ document.getElementById('moreSheet').classList.add('open'); }
+function closeMore(){ document.getElementById('moreSheet').classList.remove('open'); }
+
+
+// ---- Force Update: unregister SW + clear caches + hard reload ----
+async function forceUpdate(){
+  try{
+    if ('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs){ try{ await r.unregister(); }catch{} }
+    }
+    if (window.caches){
+      const keys = await caches.keys();
+      for (const k of keys){ try{ await caches.delete(k); }catch{} }
+    }
+  }catch(e){}
+  location.href = location.pathname + '?nocache=' + Date.now();
+}
+
+// ---- Init ----
+(function init(){
+  applyTheme();
+  const today = new Date().toISOString().slice(0,10);
+  ['t-date','qa-date','qa2-date','r-start'].forEach(id=>{ const el=document.getElementById(id); if (el && !el.value) el.value=today; });
+  const hash = location.hash || '#dashboard'; showPage(hash.slice(1));
+})();
+</script>
+
+<div class="accessory" id="accessory">
+  <button class="btn" onclick="document.activeElement && document.activeElement.blur();hideAccessory()">Fermer le clavier</button>
+</div>
+
+<!-- Tab Bar (mobile) -->
+<div class="tabbar" id="tabbar" role="tablist" aria-label="Navigation principale">
+  <button data-tab="#dashboard" class="active" aria-selected="true"><div>🏠</div><div class="lbl">Accueil</div></button>
+  <button data-tab="#transactions"><div>📒</div><div class="lbl">Transactions</div></button>
+  <button data-tab="#plan"><div>🗂️</div><div class="lbl">Budget</div></button>
+  <button data-tab="#calendar"><div>📅</div><div class="lbl">Calendrier</div></button>
+  <button data-tab="#more"><div>⋯</div><div class="lbl">Plus</div></button>
+</div>
+
+<!-- More sheet -->
+<div class="more-sheet" id="moreSheet">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <strong>Plus</strong>
+    <button class="btn" onclick="closeMore()">Fermer</button>
+  </div>
+  <div class="more-grid">
+    <div class="more-item" onclick="goto('#recurring');closeMore()"><div>🔁</div><b>Récurrences</b></div>
+    <div class="more-item" onclick="goto('#subscriptions');closeMore()"><div>🧾</div><b>Abonnements</b></div>
+    <div class="more-item" onclick="goto('#goals');closeMore()"><div>🎯</div><b>Objectifs</b></div>
+    <div class="more-item" onclick="goto('#categories');closeMore()"><div>🏷️</div><b>Catégories</b></div>
+    <div class="more-item" onclick="goto('#budgets');closeMore()"><div>📊</div><b>Budgets</b></div>
+    <div class="more-item" onclick="goto('#settings');closeMore()"><div>⚙️</div><b>Réglages</b></div>
+  </div>
+</div>
+
+</body>
+
+</html>
