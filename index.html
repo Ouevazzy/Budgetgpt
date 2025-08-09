@@ -103,7 +103,7 @@
 <body>
 <header>
   <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-    <div class="brand"><button class="btn" onclick="forceUpdate()" style="margin-right:8px">↻ Forcer la mise à jour</button> 💰 Mes finance v5.4.3</div>
+    <div class="brand"><button class="btn" onclick="forceUpdate()" style="margin-right:8px">↻ Forcer la mise à jour</button> 💰 Mes finance v5.4.4</div>
     <nav id="nav">
       <a href="#dashboard" class="active">Dashboard</a>
       <a href="#plan">Plan</a>
@@ -1308,6 +1308,32 @@ function highlightTab(){
 }
 window.addEventListener('hashchange', highlightTab);
 window.addEventListener('DOMContentLoaded', highlightTab);
+
+
+// --- Safe navigation wiring (tab bar + hash) ---
+function safeGoto(hash){
+  if (!hash) hash = '#dashboard';
+  try{ if (typeof goto === 'function'){ goto(hash); highlightTab(); return; } }catch(e){}
+  // Fallback: show/hide sections by id
+  document.querySelectorAll('section[id]').forEach(sec=>{
+    const match = '#'+sec.id === hash;
+    sec.style.display = match ? '' : 'none';
+  });
+  highlightTab();
+  try{ history.replaceState(null,'',hash); }catch(e){}
+}
+// Delegate clicks on tabbar and header nav
+document.addEventListener('click', (e)=>{
+  const a = e.target.closest('#tabbar a, header nav a[href^="#"]');
+  if (!a) return;
+  const h = a.getAttribute('href');
+  if (h && h.startsWith('#')){
+    e.preventDefault();
+    safeGoto(h);
+  }
+});
+window.addEventListener('hashchange', ()=> safeGoto(location.hash));
+window.addEventListener('DOMContentLoaded', ()=> safeGoto(location.hash || '#dashboard'));
 
 // ---- Init ----
 (function init(){
