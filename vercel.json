@@ -36,15 +36,6 @@
           "value": "no-cache"
         }
       ]
-    },
-    {
-      "source": "/force-update.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
-        }
-      ]
     }
   ]
 }
